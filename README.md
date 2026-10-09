@@ -8,7 +8,8 @@ host internals move.
 
 Both skills are shipped verbatim from their upstream releases (ponytail
 `v4.10.0`, `dsh-grill-me@0.1.0`); only the DSH integration is new. See
-[LICENSE](LICENSE) for attribution.
+[LICENSE](LICENSE) for attribution — `grill-me` has a chain of ancestry worth
+reading before you redistribute.
 
 ## What it registers
 

@@ -25,16 +25,50 @@ SOFTWARE.
 ## Third-party content
 
 The files under `skills/` are redistributed verbatim and are not covered by the
-copyright above. Each remains under its own MIT license:
+copyright above.
 
-| Files | Source | License |
-| --- | --- | --- |
-| `skills/ponytail*/SKILL.md` | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) v4.10.0 | MIT, © Dietrich Gebert |
-| `skills/grill-me/SKILL.md` | npm [`dsh-grill-me@0.1.0`](https://www.npmjs.com/package/dsh-grill-me) | MIT, © chensatan13 |
+### `skills/ponytail*/SKILL.md`
 
-Both copies were verified byte-identical to the release they came from. The
-grill-me package declares a GitHub repository that is not publicly reachable, so
-npm is cited as the source of record.
+Verbatim from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)
+at tag `v4.10.0`, verified byte-identical. MIT, © Dietrich Gebert.
 
-Only the DSH integration (`index.js`, `lib/`, `cordis.patch.yml`, `test/`) is
+### `skills/grill-me/SKILL.md`
+
+This one file has a chain of ancestry; no single upstream is its author.
+
+1. **Verbatim source.** Byte-identical to npm
+   [`dsh-grill-me@0.1.0`](https://www.npmjs.com/package/dsh-grill-me), which is
+   MIT-licensed and © chensatan13. That package declares a GitHub repository
+   (`satan9394/dsh-grill-me`) that is not publicly reachable, so npm is cited as
+   the source of record.
+2. **That package's stated inspiration.** Its README credits
+   [RobMitt/grill-me-skill](https://github.com/robmitt/grill-me-skill). Seven
+   substantive sentences in the body are verbatim from that repo's `SKILL.md`
+   (the `AskUserQuestion` instructions, the "one question at a time" rule, the
+   "Other field" note, the codebase-lookup rule, and the closing summary rule).
+   **That repository carries no LICENSE file**, so it is "all rights reserved"
+   by default — see the note below.
+3. **Where the description text comes from.** RobMitt's frontmatter
+   `description` line (244 bytes) is byte-identical to the same line in
+   [mattpocock/skills](https://github.com/mattpocock/skills) at commit
+   `62f43a18`, added there on 2026-03-13 in `d1beb4fe`. Matt Pocock's repo is
+   MIT, © 2026 Matt Pocock. The design-tree framing originates there too
+   (RobMitt's repo was created 2026-04-11, after that text already existed).
+
+So the honest position is: the **DSH-specific mechanics** (one question at a
+time, driving `ask_user_question`, the "what to grill about" checklist) are what
+this port actually contributes, and the **prose underneath descends from Matt
+Pocock's MIT-licensed original via an unlicensed intermediate**.
+
+### Licensing caveat
+
+Because step 2 above is a repository with no license, the provenance of some
+sentences in `skills/grill-me/SKILL.md` is not clean. This file is included
+here for transparency and local use; if you intend to redistribute this bundle
+commercially, replace `skills/grill-me/SKILL.md` with your own text first. The
+mechanism it drives (see `README.md`) is independent of the wording.
+
+### Original work
+
+Only the DSH integration — `index.js`, `lib/`, `cordis.patch.yml`, `test/` — is
 original work.
