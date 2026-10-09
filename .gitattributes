@@ -1,0 +1,4 @@
+# The skills under skills/ are redistributed verbatim from upstream releases;
+# force LF so a Windows checkout keeps them byte-identical.
+* text=auto eol=lf
+*.png binary

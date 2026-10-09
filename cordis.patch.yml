@@ -1,0 +1,8 @@
+# Bundle layer for dsh-ponytail-grill.
+# `plugin_manager install_bundle` applies this into the active profile.
+# The row resolves by package name, so the installed copy is what boots.
+- insert:
+    - id: ponytail-grill
+      name: dsh-ponytail-grill
+      config:
+        defaultMode: full

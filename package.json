@@ -1,0 +1,27 @@
+{
+  "name": "dsh-ponytail-grill",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Ponytail (laziest solution that works) and Grill Me (Socratic questioning) for DSH.",
+  "license": "MIT",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json",
+    "./skills/*": "./skills/*"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "skills",
+    "cordis.patch.yml"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
