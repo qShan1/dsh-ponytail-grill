@@ -78,6 +78,7 @@ async function loadBundle() {
 /** Render a registered component the way its slot would, then return the element. */
 function render(slot, props) {
 	const element = slot.component(props);
+	if (element === null) return null;
 	return element.type(element.props);
 }
 
@@ -136,4 +137,23 @@ test("both dictionaries define the same keys", async () => {
 	assert.ok(unique.includes("grill.label"));
 	assert.ok(unique.includes("badge.aria"));
 	assert.ok(unique.includes("settings.nav"));
+	assert.ok(unique.includes("settings.visible"));
+});
+
+test("both dock entries stay hidden when the settings page turned them off", async () => {
+	const realFetch = globalThis.fetch;
+	globalThis.fetch = async () => ({
+		json: async () => ({ ok: true, state: { showInComposer: false, defaultMode: "full", baseline: "full" } })
+	});
+	try {
+		const { slots } = await loadBundle();
+		// `apply` seeds the visibility cell from one read; let that promise settle.
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		for (const id of ["ponytail-mode", "ponytail-grill"]) {
+			const slot = slots.find((entry) => entry.options.id === id && entry.options.name === "conversation.composer.dock");
+			assert.equal(render(slot, props()), null, `${id} should render nothing`);
+		}
+	} finally {
+		globalThis.fetch = realFetch;
+	}
 });

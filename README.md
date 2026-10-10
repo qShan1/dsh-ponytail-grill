@@ -6,10 +6,10 @@ works) and Grill Me (Socratic questioning) ported to DSH as one host plugin.
 Zero runtime dependencies. No `@deepseek-ai/*` imports, so it cannot break when
 host internals move.
 
-Both skills are shipped verbatim from their upstream releases (ponytail
-`v4.10.0`, `dsh-grill-me@0.1.0`); only the DSH integration is new. See
-[LICENSE](LICENSE) for attribution — `grill-me` has a chain of ancestry worth
-reading before you redistribute.
+The `ponytail*` skills are shipped verbatim from upstream (`v4.10.0`); only the
+DSH integration is new. `grill-me` was rewritten as original text — its earlier
+revisions descended from an unlicensed intermediate. See [LICENSE](LICENSE) for
+the full record.
 
 A host half and a Client half in one package: the host registers the skills, the
 prompt section, the mode commands, a session projection and one HTTP route; the
@@ -34,7 +34,7 @@ Client half (`lib/client.js`):
 | --- | --- | --- |
 | Mode badge | `conversation.composer.dock` (order 5) | reads `useProjection("ponytail")`, clicks through `ctx.remote.commands.execute(sessionId, "/ponytail-mode X")` |
 | Grill chip | `conversation.composer.dock` (order 6) | sends `/grill-me` as a queued prompt through `ctx.remote.session.prompt` |
-| Settings page | `settings.section` (order 25) | reads and writes `defaultMode` through the plugin's own HTTP route |
+| Settings page | `settings.section` (order 25) | reads and writes `defaultMode` and `showInComposer` through the plugin's own HTTP route |
 
 The badge renders nothing until the projection reports a mode, and the settings
 row draws its own label — `settings.section` projects no `label` and passes no
@@ -90,9 +90,16 @@ Three visible surfaces, all from the Client half:
 - **Grill chip** next to the badge. Clicking it queues `/grill-me` as a normal
   user prompt, which the skill tool turns into an interview driven by
   `ask_user_question`.
-- **Settings page** ("Ponytail") in Settings. It shows the effective baseline and
-  lets you change `defaultMode`, which is written back into the profile patch
-  through the Config Editor.
+- **Settings page** ("Ponytail") in Settings. It shows the effective baseline,
+  lets you change `defaultMode`, and carries one checkbox —
+  **show the level badge and the grill chip below the composer** — for when you
+  want both dock entries out of the way. Both fields are written back into the
+  profile patch through the Config Editor.
+
+The checkbox is the one thing the badge cannot read off the transcript: it is
+profile state, not session state, so the settings page seeds a module-level cell
+that the badge and the chip subscribe to. Unchecking it hides both immediately;
+a reload reads the stored value back.
 
 If `PONYTAIL_DEFAULT_MODE` is set, the page shows it as an override and changing
 `defaultMode` will not take effect until that variable is unset.
@@ -104,13 +111,14 @@ If `PONYTAIL_DEFAULT_MODE` is set, the page shows it as an override and changing
   name: dsh-ponytail-grill
   config:
     defaultMode: full   # lite | full | ultra | off
+    showInComposer: true # show the badge and the grill chip under the composer
 ```
 
 `PONYTAIL_DEFAULT_MODE` overrides `defaultMode`. An unrecognized value in either
 place falls back to `full` rather than throwing. With `off` as the baseline no
 ladder section is registered at all, so the prompt stays clean until you ask.
 
-The settings page writes the same field. The plugin declares no schemastery-backed
+The settings page writes both fields. The plugin declares no schemastery-backed
 `Config`, so the Settings service's generic form does not list it — the page is
 its own, and it persists through `configEditor.edit()` on this plugin's profile
 entry.
@@ -125,7 +133,7 @@ lib/projection.js     the `ponytail` session projection (transcript → live mod
 lib/commands.js       /ponytail-mode and /ponytail-default host commands
 lib/http.js           the exact route the settings page talks to
 lib/client.js         Client half: mode badge + grill chip + settings page
-skills/<name>/SKILL.md   the seven skills, verbatim from upstream
+skills/<name>/SKILL.md   seven skills: `ponytail*` verbatim, `grill-me` rewritten
 test/mode.test.js     node --test
 test/projection.test.js  node --test
 test/client.test.js   node --test (slots, click paths, dictionaries)

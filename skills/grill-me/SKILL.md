@@ -10,43 +10,43 @@ description: |
 
 # Grill Me — 苏格拉底式追问
 
-Interview the user relentlessly about every aspect of their plan until you
-reach a shared understanding. Walk down each branch of the decision tree,
-resolving dependencies between decisions one by one.
+Interrogate the plan in front of you until nothing about it is still assumed.
+Treat the design as a tree: each answer opens the branches it settles and
+closes the ones it rules out. Work through it a node at a time.
 
-## How to ask questions
+## How to ask
 
-- Use the `ask_user_question` tool for every question you ask. Never pose
-  questions as plain text in your response — always use the structured
-  question tool so the user can quickly select an answer or type a custom one.
-- Ask **one question at a time**. Wait for the user's answer before moving to
-  the next question. This keeps the conversation focused and prevents
-  overwhelm.
-- For each question, provide 2–4 concrete multiple-choice options representing
-  the most likely answers or directions. Think about what the user would
-  realistically choose — generic options like "Yes" / "No" aren't helpful
-  unless the question is genuinely binary. The user always has the "Other"
-  field available to write something custom.
+- Ask through the `ask_user_question` tool, never as prose in your reply. The
+  tool gives the user clickable answers and a free-text escape hatch; a
+  paragraph in a response gives them neither.
+- **One question per turn.** Fire the next one only after the current answer
+  lands, so the thread stays readable and the user is never facing a wall.
+- Offer 2–4 options that are actually plausible next moves, drawn from what
+  this specific plan could do. A bare "Yes" / "No" pair is only worth
+  presenting when the decision truly has two sides. Free-text answers are
+  always available, so never treat the list as the whole answer space.
 
-## Flow
+## How to run the interview
 
-1. After receiving an answer, briefly acknowledge the decision (1–2 sentences
-   max), then immediately ask the next question via `ask_user_question`.
-2. If a question can be answered by exploring the codebase or files, explore
-   them yourself instead of asking the user.
-3. Continue until all branches of the design tree are resolved.
-4. When finished, provide a concise summary of all decisions made.
+1. Acknowledge the answer in a sentence or two, then ask the next question.
+   Never stack acknowledgements or summarize what you just heard back.
+2. Answer what you can yourself: if the codebase, the files, or the docs
+   settle a question, go look instead of asking. Only ask what the user alone
+   can decide.
+3. Keep going until every branch of the tree has an answer — including the
+   branches the user's answers opened along the way.
+4. Stop when the tree is resolved, not when the questions run out.
 
-## What to grill about
+## What to grill
 
-- **Goal & success criteria**: what "done" looks like, measurable outcomes.
-- **Users & constraints**: who is affected, what cannot change.
-- **Scope**: what is in, what is explicitly out.
-- **Dependencies**: which decisions block others; resolve them in order.
-- **Risks & failure modes**: what happens if it breaks, and the fallback.
-- **Trade-offs**: what is being given up by each choice.
+- **Goal & success criteria**: what "done" looks like, in observable terms.
+- **Users & constraints**: who this affects, what is fixed and cannot move.
+- **Scope**: what is in, and what is deliberately out.
+- **Dependencies**: which decisions gate others; settle the gates first.
+- **Risks & failure modes**: what breaks, how it is noticed, the fallback.
+- **Trade-offs**: what each choice gives up.
 
 ## Output
 
-End with a structured summary: decisions made, open questions, and the agreed
-next step.
+Close with a structured summary: the decisions made, the questions still open,
+and the next step the two of you agreed on.

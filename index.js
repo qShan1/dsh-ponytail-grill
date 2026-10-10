@@ -41,7 +41,11 @@ const LADDER_ORDER = 150;
 
 export function apply(ctx, config = {}) {
 	const baseline = resolveBaselineMode(config.defaultMode ?? DEFAULT_MODE);
-	const state = { baseline, defaultMode: config.defaultMode ?? DEFAULT_MODE };
+	const state = {
+		baseline,
+		defaultMode: config.defaultMode ?? DEFAULT_MODE,
+		showInComposer: config.showInComposer ?? true
+	};
 
 	const provider = new BundledSkillProvider();
 	ctx.skills.registerProvider(() => provider);
