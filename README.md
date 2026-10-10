@@ -11,13 +11,33 @@ Both skills are shipped verbatim from their upstream releases (ponytail
 [LICENSE](LICENSE) for attribution — `grill-me` has a chain of ancestry worth
 reading before you redistribute.
 
+A host half and a Client half in one package: the host registers the skills, the
+prompt section, the mode commands, a session projection and one HTTP route; the
+Client adds a mode badge under the composer and a settings page.
+
 ## What it registers
+
+Host half:
 
 | Piece | Mechanism | Why |
 | --- | --- | --- |
 | 7 skills | `ctx.skills.registerProvider()` over the bundled `skills/` dir | `skill("ponytail")`, `/ponytail-review` and the catalog all work without depending on which user-level skill root the host scans |
 | Always-on ladder | `ctx.systemPrompt.section()` at order `150` | Written once at activation, never rewritten, so the request prefix stays cacheable |
 | `/ponytail lite\|full\|ultra\|off` | one `agent/pre-step` listener | Appends a `<system-reminder>` instead of rewriting the prompt — a rewrite would invalidate the cached prefix on every switch |
+| `ponytail-mode`, `ponytail-default` | `ctx.commands.register()` | Gives the GUI a way to switch without typing. `/ponytail` itself stays unregistered, or the command table would swallow the gesture before the pre-step reader sees it |
+| `ponytail` projection | `ctx.inject(["sessionProjections"], …)` | Folds the mode out of the transcript so the badge shows real state with no extra RPC |
+| One exact route | `ctx.inject(["webServer"], …)` on `/dsh-ponytail-grill/api` | The settings page is not bound to a session, so it has no `agentId` for a remote to scope to |
+
+Client half (`lib/client.js`):
+
+| Piece | Slot | Reads / writes |
+| --- | --- | --- |
+| Mode badge | `conversation.composer.dock` (order 5) | reads `useProjection("ponytail")`, clicks through `ctx.remote.commands.execute(sessionId, "/ponytail-mode X")` |
+| Settings page | `settings.section` (order 25) | reads and writes `defaultMode` through the plugin's own HTTP route |
+
+The badge renders nothing until the projection reports a mode, and the settings
+row draws its own label — `settings.section` projects no `label` and passes no
+owner props beyond `close`.
 
 Skills: `ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`,
 `ponytail-help`, `ponytail-review`, `grill-me`.
@@ -38,6 +58,22 @@ load their skill instead.
 The mode lives in the transcript as `<ponytail-mode value="..."/>` inside the
 injected reminder, so it survives compaction and needs no per-session state map.
 
+## In the GUI
+
+Two visible surfaces, both from the Client half:
+
+- **Mode badge** under the composer. It shows the session's live mode and cycles
+  `lite → full → ultra → off → lite` on click. The click runs
+  `/ponytail-mode <next>` through `ctx.remote.commands.execute`, so the badge and
+  a typed gesture go down the same path; a failure shows inline next to the badge
+  instead of disappearing.
+- **Settings page** ("Ponytail") in Settings. It shows the effective baseline and
+  lets you change `defaultMode`, which is written back into the profile patch
+  through the Config Editor.
+
+If `PONYTAIL_DEFAULT_MODE` is set, the page shows it as an override and changing
+`defaultMode` will not take effect until that variable is unset.
+
 ## Configuration
 
 ```yaml
@@ -51,14 +87,24 @@ injected reminder, so it survives compaction and needs no per-session state map.
 place falls back to `full` rather than throwing. With `off` as the baseline no
 ladder section is registered at all, so the prompt stays clean until you ask.
 
+The settings page writes the same field. The plugin declares no schemastery-backed
+`Config`, so the Settings service's generic form does not list it — the page is
+its own, and it persists through `configEditor.edit()` on this plugin's profile
+entry.
+
 ## Layout
 
 ```
-index.js              apply(): provider + prompt section + pre-step listener
+index.js              apply(): provider + prompt section + pre-step + collaborators
 lib/mode.js           command parsing, ladder text, mode-state fold
 lib/skills.js         frontmatter parser + skill provider
+lib/projection.js     the `ponytail` session projection (transcript → live mode)
+lib/commands.js       /ponytail-mode and /ponytail-default host commands
+lib/http.js           the exact route the settings page talks to
+lib/client.js         Client half: composer badge + settings page
 skills/<name>/SKILL.md   the seven skills, verbatim from upstream
 test/mode.test.js     node --test
+test/projection.test.js  node --test
 ```
 
 ## Install
@@ -66,6 +112,13 @@ test/mode.test.js     node --test
 ```
 plugin_manager install_bundle(target: "<absolute path to this directory>")
 ```
+
+The install adds this package to the profile's `dsh.profile.bundles` and to its
+`dependencies` as a `link:` entry, then applies `cordis.patch.yml`. **Bundle
+membership is what makes the Client half load**: the host only serves
+`<id>/client.js` for packages listed in `bundles`, so a package that is merely a
+dependency shows up in the host tree with no badge and no settings page. Installing
+needs a restart of DSH for the Client half to appear.
 
 ## Test
 

@@ -1,12 +1,13 @@
 {
   "name": "dsh-ponytail-grill",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "Ponytail (laziest solution that works) and Grill Me (Socratic questioning) for DSH.",
   "license": "MIT",
   "exports": {
     ".": "./index.js",
+    "./client": "./lib/client.js",
     "./package.json": "./package.json",
     "./skills/*": "./skills/*"
   },
@@ -22,6 +23,12 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
     }
   }
 }
