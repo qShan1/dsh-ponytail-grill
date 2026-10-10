@@ -13,7 +13,7 @@ reading before you redistribute.
 
 A host half and a Client half in one package: the host registers the skills, the
 prompt section, the mode commands, a session projection and one HTTP route; the
-Client adds a mode badge under the composer and a settings page.
+Client adds a mode badge and a grill chip under the composer plus a settings page.
 
 ## What it registers
 
@@ -33,11 +33,17 @@ Client half (`lib/client.js`):
 | Piece | Slot | Reads / writes |
 | --- | --- | --- |
 | Mode badge | `conversation.composer.dock` (order 5) | reads `useProjection("ponytail")`, clicks through `ctx.remote.commands.execute(sessionId, "/ponytail-mode X")` |
+| Grill chip | `conversation.composer.dock` (order 6) | sends `/grill-me` as a queued prompt through `ctx.remote.session.prompt` |
 | Settings page | `settings.section` (order 25) | reads and writes `defaultMode` through the plugin's own HTTP route |
 
 The badge renders nothing until the projection reports a mode, and the settings
 row draws its own label — `settings.section` projects no `label` and passes no
 owner props beyond `close`.
+
+The grill chip exists because a skill has no command-table entry: `/grill-me` is
+a *gesture* the skill tool reads out of user input, so the chip sends that exact
+text as an ordinary prompt rather than calling a command. Typing `/grill-me`
+yourself does the same thing.
 
 Skills: `ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`,
 `ponytail-help`, `ponytail-review`, `grill-me`.
@@ -58,15 +64,32 @@ load their skill instead.
 The mode lives in the transcript as `<ponytail-mode value="..."/>` inside the
 injected reminder, so it survives compaction and needs no per-session state map.
 
+## Grill Me
+
+`grill-me` is a skill, not a command, so it has no `/` entry in the command
+table and no GUI of its own. Three ways to start it:
+
+- type `/grill-me` anywhere in a message — the skill tool reads that gesture out
+  of your input and loads the skill;
+- click the **Grill** chip under the composer, which sends exactly that text;
+- just ask to be questioned ("帮我挑毛病", "grill me"), since the skill is
+  model-invocable too.
+
+Once loaded it asks one multiple-choice question at a time through
+`ask_user_question` and ends with a summary of the decisions.
+
 ## In the GUI
 
-Two visible surfaces, both from the Client half:
+Three visible surfaces, all from the Client half:
 
 - **Mode badge** under the composer. It shows the session's live mode and cycles
   `lite → full → ultra → off → lite` on click. The click runs
   `/ponytail-mode <next>` through `ctx.remote.commands.execute`, so the badge and
   a typed gesture go down the same path; a failure shows inline next to the badge
   instead of disappearing.
+- **Grill chip** next to the badge. Clicking it queues `/grill-me` as a normal
+  user prompt, which the skill tool turns into an interview driven by
+  `ask_user_question`.
 - **Settings page** ("Ponytail") in Settings. It shows the effective baseline and
   lets you change `defaultMode`, which is written back into the profile patch
   through the Config Editor.
@@ -101,10 +124,11 @@ lib/skills.js         frontmatter parser + skill provider
 lib/projection.js     the `ponytail` session projection (transcript → live mode)
 lib/commands.js       /ponytail-mode and /ponytail-default host commands
 lib/http.js           the exact route the settings page talks to
-lib/client.js         Client half: composer badge + settings page
+lib/client.js         Client half: mode badge + grill chip + settings page
 skills/<name>/SKILL.md   the seven skills, verbatim from upstream
 test/mode.test.js     node --test
 test/projection.test.js  node --test
+test/client.test.js   node --test (slots, click paths, dictionaries)
 ```
 
 ## Install
